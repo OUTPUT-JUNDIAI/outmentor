@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_development
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # opcional, só se quiser acessar o DB pelo host
+
+  web:
+    build: .
+    image: rails8-app:dev
+    depends_on:
+      - db
+    env_file:
+      - .env          # opcional; veja exemplo abaixo
+    environment:
+      RAILS_ENV: development
+      # Se preferir usar DATABASE_URL em vez de config/database.yml:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/app_development"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+    command: bash -lc "bundle exec rails db:prepare && bundle exec rails s -b 0.0.0.0 -p 3000"
+
+volumes:
+  db-data:
+  bundle:
