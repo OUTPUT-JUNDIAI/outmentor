@@ -1,30 +1,21 @@
-# Rails 8 (Ruby 3.3+) + Postgres client + Node (para projetos com jsbundling/vite/esbuild)
-FROM ruby:3.3-slim
+FROM ruby:3.3-bookworm
 
-# Variáveis básicas
-ENV RAILS_ENV=development \
-    BUNDLE_PATH=/usr/local/bundle \
-    BUNDLE_JOBS=4 \
-    BUNDLE_RETRY=3
-
-# Dependências do sistema
+# Dependências do sistema (ajuste conforme seu app: node, libpq, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential git curl \
-    libpq-dev postgresql-client \
-    nodejs npm \
+    build-essential pkg-config libyaml-dev libpq-dev \
+    curl git \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Cache de gems: copie Gemfile(s) antes
+# Gemas
 COPY Gemfile Gemfile.lock ./
-RUN gem install bundler && bundle install
+RUN bundle install --jobs 4
 
-# Copie o restante do app
+# Código
 COPY . .
 
-# Porta padrão do Rails
+# Porta padrão
 EXPOSE 3000
 
-# Comando padrão: prepara DB e sobe o servidor
-CMD ["bash", "-lc", "bundle exec rails db:prepare && bundle exec rails s -b 0.0.0.0 -p 3000"]
+CMD ["bin/rails", "s", "-b", "0.0.0.0"]

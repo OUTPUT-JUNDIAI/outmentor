@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"   # opcional, só se quiser acessar o DB pelo host
 
-  web:
+  api:
     build: .
     image: rails8-app:dev
     depends_on:
